@@ -1,0 +1,50 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Secure Web-Based Sensor — Sign In</title>
+<style>
+*{box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Roboto,sans-serif;background:#09090b;color:#09090b;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;overflow:hidden;-webkit-font-smoothing:antialiased}
+.panel{position:relative;z-index:2;background:#ffffff;padding:40px 36px;border-radius:6px;width:360px;border:1px solid #27272a;box-shadow:0 20px 50px rgba(0,0,0,0.6)}
+.top-meta{font-family:'Consolas','Courier New',monospace;font-size:11px;color:#71717a;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.dot{width:7px;height:7px;background:#09090b;display:inline-block}
+h1{margin:0 0 6px 0;font-size:20px;font-weight:700;letter-spacing:-0.4px;color:#09090b}
+.desc{font-size:13px;color:#52525b;margin-bottom:28px;line-height:1.4}
+label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.6px;color:#3f3f46;margin-bottom:6px}
+input{width:100%;padding:10px 12px;margin-bottom:16px;border:1px solid #d4d4d8;border-radius:4px;background:#fafafa;color:#09090b;font-size:14px;transition:border-color 0.15s}
+input:focus{outline:none;border-color:#09090b;background:#ffffff}
+button{width:100%;padding:11px;background:#09090b;color:#ffffff;border:1px solid #09090b;border-radius:4px;font-size:13px;font-weight:600;letter-spacing:0.3px;cursor:pointer;margin-top:4px;transition:background 0.15s}
+button:hover{background:#27272a}
+.err{background:#fef2f2;color:#b91c1c;padding:10px 12px;border-radius:4px;font-size:12px;font-weight:500;margin-bottom:16px;border-left:3px solid #dc2626}
+.footer-note{margin-top:24px;padding-top:16px;border-top:1px solid #f4f4f5;font-family:'Consolas',monospace;font-size:11px;color:#a1a1aa;display:flex;justify-content:space-between}
+</style>
+</head>
+<body>
+<canvas id="cursorGridCanvas" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:0;pointer-events:none;"></canvas>
+<div class="panel">
+  <div class="top-meta"><span class="dot"></span> LOCAL EDGE NODE</div>
+  <h1>Secure web based sensor</h1>
+  <div class="desc">Enter operator credentials to access live telemetry and camera feeds.</div>
+  {% if error %}<div class="err">{{ error }}</div>{% endif %}
+  <form method="POST">
+    <label>Operator ID</label>
+    <input type="text" name="username" placeholder="Username" required autocomplete="off">
+    <label>Passcode</label>
+    <input type="password" name="password" placeholder="••••••••" required>
+    <button type="submit">Authenticate</button>
+  </form>
+  <div class="footer-note"><span>SYS.OFFLINE.READY</span><span>v2.4</span></div>
+</div>
+<script>
+(function(){
+  const c=document.getElementById('cursorGridCanvas'),x=c.getContext('2d');
+  let w,h,m={x:-1e3,y:-1e3},cells=new Map(),p=[];
+  function r(){w=c.width=innerWidth;h=c.height=innerHeight;}addEventListener('resize',r);r();
+  addEventListener('mousemove',e=>{m.x=e.clientX;m.y=e.clientY;const n=performance.now();for(let i=Math.max(0,Math.floor((m.x-140)/60));i<=Math.ceil((m.x+140)/60);i++)for(let j=Math.max(0,Math.floor((m.y-140)/60));j<=Math.ceil((m.y+140)/60);j++){const d=Math.hypot(m.x-(i*60+30),m.y-(j*60+30));if(d<=140)cells.set(i+','+j,{i,j,t:n,s:1-d/140});}});
+  addEventListener('click',e=>p.push({x:e.clientX,y:e.clientY,t:performance.now()}));
+  function loop(n){x.clearRect(0,0,w,h);x.strokeStyle='rgba(255,255,255,0.07)';x.beginPath();for(let i=0;i<=w;i+=60){x.moveTo(i,0);x.lineTo(i,h);}for(let j=0;j<=h;j+=60){x.moveTo(0,j);x.lineTo(w,j);}x.stroke();if(m.x>-500){const g=x.createRadialGradient(m.x,m.y,0,m.x,m.y,196);g.addColorStop(0,'rgba(255,255,255,0.08)');g.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=g;x.fillRect(0,0,w,h);}cells.forEach((v,k)=>{const e=n-v.t,a=e>400?1-(e-400)/800:1;if(a<=0)cells.delete(k);else{x.fillStyle='rgba(255,255,255,'+(0.12*v.s*a)+')';x.fillRect(v.i*60,v.j*60,60,60);}});p=p.filter(v=>n-v.t<700);p.forEach(v=>{const q=(n-v.t)/700;x.strokeStyle='rgba(255,255,255,'+((1-q)*0.3)+')';x.lineWidth=1.5;x.beginPath();x.arc(v.x,v.y,q*300,0,7);x.stroke();});requestAnimationFrame(loop);}requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

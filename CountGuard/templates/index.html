@@ -1,0 +1,73 @@
+<!-- CAN ONLY BE USED FOR LIVE FEED -->
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>People Counting Alert System</title>
+    <style>
+        body {
+            text-align: center;
+            font-family: Arial;
+            background: #f0f0f0;
+        }
+        h1 { color: #333; }
+
+        #count {
+            font-size: 30px;
+            font-weight: bold;
+        }
+
+        #status {
+            font-size: 28px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .normal {
+            color: green;
+        }
+
+        .danger {
+            color: red;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>People Counting & Alert System</h1>
+
+<img src="/video" width="720">
+
+<p id="count">People Count: 0</p>
+<p id="status" class="normal">Status: NORMAL</p>
+
+<script>
+function updateCount() {
+    fetch('/count')
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById("count").innerText =
+                "People Count: " + data.count;
+
+            let statusBox = document.getElementById("status");
+
+            if (data.status === "EXCEEDED") {
+                statusBox.innerText = "🚨 STATUS: LIMIT EXCEEDED!";
+                statusBox.className = "danger";
+            } else {
+                statusBox.innerText = "✅ STATUS: NORMAL";
+                statusBox.className = "normal";
+            }
+        });
+}
+
+setInterval(updateCount, 1000);
+</script>
+
+</body>
+</html>
+
+
+

@@ -1,0 +1,83 @@
+body {
+    margin: 0;
+    background: #0f0f0f;
+    font-family: Arial, sans-serif;
+    color: white;
+}
+
+.header {
+    background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+    color: white;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+}
+
+.header h1 {
+    margin: 0;
+    font-size: 36px;
+    color: #00eaff;
+}
+
+.header .tagline {
+    margin-top: 8px;
+    font-size: 16px;
+    opacity: 0.9;
+}
+
+.main {
+    padding: 40px;
+}
+
+.content {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 40px;
+    flex-wrap: wrap;
+}
+
+.video-container,
+.counter-box {
+    background: #1b1b1b;
+    padding: 20px;
+    border-radius: 12px;
+    width: 45%;
+    box-shadow: 0 0 20px #00eaff55;
+    margin-bottom: 20px;
+}
+
+.video-container img {
+    width: 100%;
+    border-radius: 10px;
+}
+
+.counter-box {
+    text-align: center;
+}
+
+#people-count {
+    font-size: 100px;
+    margin-top: 20px;
+    color: #00ffaa;
+    text-shadow: 0 0 20px #00ffaa;
+}
+
+.normal {
+    color: #00ff88;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.danger {
+    color: red;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+#email {
+    margin-top: 10px;
+    font-size: 16px;
+}
+
+
+

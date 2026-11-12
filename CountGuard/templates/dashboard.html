@@ -1,0 +1,214 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Secure Web
+Based Sensor â€” Console</title>
+<style>
+*{box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Roboto,sans-serif;background:#09090b;color:#09090b;margin:0;padding:20px;-webkit-font-smoothing:antialiased}
+.shell{position:relative;z-index:2;max-width:1380px;margin:0 auto}
+.topbar{ display:flex;justify-content:space-between;align-items:center;background:#ffffff;padding:14px 22px;border-radius:6px;border:1px solid #27272a;margin-bottom:20px }
+.title-group{display:flex;align-items:center;gap:12px}
+.status-sq{width:9px;height:9px;background:#16a34a;display:inline-block}
+.topbar h1{ margin:0;font-size:17px;font-weight:700;letter-spacing:-0.3px }
+.sys-tag{font-family:'Consolas',monospace;font-size:11px;color:#71717a;background:#f4f4f5;padding:3px 8px;border-radius:3px;border:1px solid #e4e4e7}
+.logout{color:#09090b;background:#ffffff;border:1px solid #d4d4d8;padding:7px 14px;text-decoration:none;border-radius:4px;font-size:12px;font-weight:600;transition:all 0.15s}
+.logout:hover{background:#09090b;color:#ffffff;border-color:#09090b}
+.alert-strip{display:none;background:#dc2626;color:#ffffff;padding:12px 18px;font-size:13px;font-weight:700;letter-spacing:0.4px;border-radius:4px;margin-bottom:20px;border:1px solid #991b1b;text-transform:uppercase}
+.workspace{display:grid;grid-template-columns:1.7fr 1fr;gap:20px;margin-bottom:20px;align-items:start}
+.panel{background:#ffffff;border-radius:6px;border:1px solid #27272a;overflow:hidden}
+.panel-head{padding:12px 18px;border-bottom:1px solid #e4e4e7;display:flex;justify-content:space-between;align-items:center;background:#fafafa}
+.panel-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#27272a}
+.panel-meta{font-family:'Consolas',monospace;font-size:11px;color:#71717a}
+.panel-body{padding:18px}
+.viewport-wrap{background:#000000;border-radius:4px;overflow:hidden;cursor:pointer;position:relative;border:1px solid #27272a}
+.viewport-wrap img{width:100%;height:480px;object-fit:contain;display:block}
+.viewport-wrap.expanded{position:fixed;top:3vh;left:3vw;width:94vw;height:94vh;z-index:999;box-shadow:0 0 0 100vmax rgba(0,0,0,0.92);border:1px solid #52525b}
+.viewport-wrap.expanded img{height:100%}
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}
+.metric-box{border:1px solid #e4e4e7;border-radius:4px;padding:12px 14px;background:#fafafa}
+.metric-label{font-size:11px;font-weight:600;color:#71717a;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:4px}
+.metric-val{font-family:'Consolas',monospace;font-size:22px;font-weight:700;color:#09090b}
+.section-block{padding-top:16px;margin-top:16px;border-top:1px solid #e4e4e7}
+.field-label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#3f3f46;margin-bottom:8px}
+.row-form{display:flex;gap:8px}
+input[type="number"],input[type="text"]{padding:8px 10px;border-radius:4px;border:1px solid #d4d4d8;background:#ffffff;color:#09090b;font-size:13px;font-family:'Consolas',monospace;width:100%}
+input:focus{outline:none;border-color:#09090b}
+button{padding:8px 14px;background:#09090b;color:#ffffff;border:1px solid #09090b;border-radius:4px;cursor:pointer;font-weight:600;font-size:12px;transition:background 0.15s;white-space:nowrap}
+button:hover{background:#27272a}
+.btn-alarm{width:100%;padding:10px;background:#ffffff;color:#b91c1c;border-color:#fca5a5;font-weight:700}
+.btn-alarm:hover{background:#dc2626;color:#ffffff;border-color:#dc2626}
+.ch-bar{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:12px}
+.ch-btn{padding:7px 4px;font-family:'Consolas',monospace;font-size:11px;background:#fafafa;color:#3f3f46;border:1px solid #d4d4d8;border-radius:4px;width:100%;text-align:center}
+.ch-btn:hover{border-color:#09090b;color:#09090b;background:#ffffff}
+.ch-btn.active{background:#09090b;color:#ffffff;border-color:#09090b;font-weight:700}
+.ch-row{display:grid;grid-template-columns:60px 1fr;align-items:center;gap:10px;margin-bottom:8px}
+.ch-row span{font-family:'Consolas',monospace;font-size:12px;color:#52525b;font-weight:600}
+table{width:100%;border-collapse:collapse}
+th{background:#fafafa;color:#52525b;padding:10px 16px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid #e4e4e7}
+td{padding:11px 16px;text-align:left;border-bottom:1px solid #f4f4f5;font-size:13px;color:#18181b}
+td.mono{font-family:'Consolas',monospace;font-size:12px}
+tr:hover td{background:#fafafa}
+.tag-breach{font-family:'Consolas',monospace;font-size:11px;background:#fef2f2;color:#b91c1c;border:1px solid #fecaca;padding:2px 8px;border-radius:3px;font-weight:600}
+</style>
+</head>
+<body>
+<canvas id="cursorGridCanvas" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:0;pointer-events:none;"></canvas>
+<div class="shell">
+  <div class="topbar">
+    <div class="title-group">
+      <span class="status-sq"></span>
+      <h1>Secure web based sensor</h1>
+      <span class="sys-tag">EDGE-AI // YOLOv8</span>
+    </div>
+    <a href="/logout" class="logout">Sign Out</a>
+  </div>
+
+  <div id="alarmBanner" class="alert-strip">THRESHOLD BREACH DETECTED â€” OCCUPANCY LIMIT EXCEEDED</div>
+
+  <div class="workspace">
+    <div class="panel">
+      <div class="panel-head">
+        <span class="panel-title">VIDEO FEED - <span id="activeCamLabel">{{ cameras[active_cam]['name'] }}</span></span>
+        <span class="panel-meta">CLICK FEED
+TO TOGGLE FULLSCREEN</span>
+      </div>
+      <div class="panel-body">
+        <div class="viewport-wrap" onclick="this.classList.toggle('expanded')">
+          <img src="/video_feed" alt="Live Sensor Stream">
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <span class="panel-title">Telemetry & Controls</span>
+        <span class="panel-meta">CH 02{{ active_cam }}</span>
+      </div>
+      <div class="panel-body">
+        <div class="metrics">
+          <div class="metric-box">
+            <div class="metric-label">Occupancy / Limit</div>
+            <div class="metric-val"><span id="liveCount">0</span> / <span id="liveLimit">{{ threshold }}</span></div>
+          </div>
+          <div class="metric-box">
+            <div class="metric-label">Logged Breaches</div>
+            <div class="metric-val">{{ total_incidents }}</div>
+          </div>
+        </div>
+
+        
+
+        <div class="section-block">
+          <label class="field-label">Occupancy Threshold Limit</label>
+          <form method="POST" action="/set_threshold" class="row-form">
+            <input type="number" name="threshold" value="{{ threshold }}" min="0" required>
+            <button type="submit">Apply</button>
+          </form>
+        </div>
+
+        <div class="section-block">
+          <label class="field-label">Camera Access Here (5 Channels)</label>
+          <div class="ch-bar">
+            {% for i in range(1, 6) %}
+            <form method="POST" action="/switch_cam/{{ i }}" style="margin:0">
+              <button type="submit" class="ch-btn {% if active_cam == i %}active{% endif %}">Cam {{ i }}</button>
+            </form>
+            {% endfor %}
+          </div>
+
+          <form method="POST" action="/save_cameras">
+            <input type="hidden" name="active_cam" value="{{ active_cam }}">
+            {% for i in range(1, 6) %}
+            <div class="ch-row">
+              <span>Cam {{ i }}</span>
+              <input type="text" name="cam_url_{{ i }}" value="{{ cameras[i]['url'] }}" placeholder="0, USB index, HTTP, or RTSP URL">
+            </div>
+            {% endfor %}
+            <button type="submit" style="width:100%;margin-top:6px">Save Channel Configuration</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <span class="panel-title">Incident Memory Log</span>
+      <span class="panel-meta">LOCAL SQLYTE STORAGE</span>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Timestamp</th>
+          <th>Source Channel</th>
+          <th>Detected Count</th>
+          <th>Configured Limit</th>
+          <th>Event Classification</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in incidents %}
+        <tr>
+          <td class="mono">{{ row[0] }}</td>
+          <td>{{ row[1] }}</td>
+          <td class="mono" style="color:#b91c1c;font-weight:700">{{ row[2] }}</td>
+          <td class="mono">{{ row[3] }}</td>
+          <td><span class="tag-breach">{{ row[4] }}</span></td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" style="text-align:center;color:#71717a;padding:24px;font-size:13px">No threshold breaches recorded in local memory.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+let isBeeping = false;
+function playSiren(){
+  if(isBeeping)return; isBeeping=true;
+  const osc=audioCtx.createOscillator(), gain=audioCtx.createGain();
+  osc.type='sawtooth'; osc.frequency.setValueAtTime(880,audioCtx.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(440,audioCtx.currentTime+0.4);
+  gain.gain.setValueAtTime(0.3,audioCtx.currentTime);
+  osc.connect(gain); gain.connect(audioCtx.destination);
+  osc.start(); osc.stop(audioCtx.currentTime+0.45);
+  setTimeout(()=>{isBeeping=false},500);
+}
+function testAlarm(){
+  fetch('/ring_alarm',{method:'POST'});
+  if(audioCtx.state==='suspended')audioCtx.resume();
+  playSiren();
+}
+setInterval(()=>{
+  fetch('/status?t='+Date.now()).then(r=>r.json()).then(d=>{
+    document.getElementById('liveCount').innerText=d.count;
+    document.getElementById('liveLimit').innerText=d.threshold;
+    document.getElementById*'…Ñ¥Ù•
+…µ1…‰•°œ¤¹¥¹¹•ÉQ•áÐõ¹…Ñ¥Ù•}…´ì(€€€½¹ÍÐˆõ‘½Õµ•¹Ð¹•Ñ±•µ•¹Ñ	å%¨…±…Éµ	…¹¹•Èœ¤ì(€€€¥˜¡¹…±…É´¥ì(€€€€€ˆ¹ÍÑå±”¹‘¥ÍÁ±…äô‰±½¬œì(€€€€€¥˜¡…Õ‘¥½
+Ñà¹ÍÑ…Ñ”ôôôÍÕÍÁ•¹‘•œ¥…Õ‘¥½
+Ñà¹É•ÍÕµ” ¤ì(€€€€€Á±…åM¥É•¸ ¤ì(€€€ô•±Í”ì(€€€€€ˆ¹ÍÑå±”¹‘¥ÍÁ±…äô¹½¹”œì(€€€ô(€ô¤ì)ô°àÀÀ¤ì((¡™Õ¹Ñ¥½¸ ¥ì(€½¹ÍÐŒõ‘½Õµ•¹Ð¹•Ñ±•µ•¹Ñ	å% ÕÉÍ½ÉÉ¥‘
+…¹Ù…Ìœ¤±àõŒ¹•Ñ
+½¹Ñ•áÐ œÉœ¤ì(€±•ÐÜ± ±´õíàè´Å”Ì±´è´Å”Íô±•±±Ìõ¹•Ü5…À ¤±Àõmtì(€™Õ¹Ñ¥½¸È ¥íÜõŒ¹Ý¥‘Ñ õ¥¹¹•É]¥‘Ñ í õŒ¹¡•¥¡Ðõ¥¹¹•É!•¥¡Ðíõ…‘‘Ù•¹Ñ1¥ÍÑ•¹•È É•Í¥é”œ±È¤íÈ ¤ì(€…‘‘Ù•¹Ñ1¥ÍÑ•¹•È µ½ÕÍ•µ½Ù”œ±”ôùí´¹àõ”¹±¥•¹Ñ`í´¹äõ”¹±¥•¹Ñdí½¹ÍÐ¸õÁ•É™½Éµ…¹”¹¹½Ü ¤í™½È¡±•Ð¤õ5…Ñ ¹µ…à À±5…Ñ ¹™±½½È ¡´¹à´ÄÐÀ¤¼ØÀ¤¤í¤ðõ5…Ñ ¹•¥° ¡´¹à¬ÄÐÀ¤¼ØÀ¤í¤¬¬¥™½È¡±•Ð¨õ5…Ñ ¹µ…à À±5…Ñ ¹™±½½È ¡´¹ä´ÄÐÀ¤¼ØÀ¤¤í¨ðõ5…Ñ ¹•¥° ¡´¹ä¬ÄÐÀ¤¼ØÀ¤í¨¬¬¥í½¹ÍÐõ5…Ñ ¹¡åÁ½Ð¡´¹à´¡¤¨ØÀ¬ÌÀ¤±´¹ä´¡ª*60+30));if(d<=140)cells.set(i+','+j,{i,j,t:n,s:1-d/140});}});
+  addEventListener('click',e=>p.push({x:e.clientX,y:e.clientY,t:performance.now()}));
+  function loop(n){x.clearRect(0,0,w,h);x.strokeStyle='rgba(255,255,255,0.14)';x.beginPath();for(let i=0;i<=w;i+=60){x.moveTo(i,0);x.lineTo(i,h);}for(let j=0;j<=h;j+=60){x.moveTo(0,j);x.lineTo(w,j);}x.stroke();if(m.x>-500){const g=x.createRadialGradient(m.x,m.y,0,m.x,m.y,196);g.addColorStop(0,'rgba(255,255,255,0.18)');g.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=g;x.fillRect(0,0,w,h);}cells.forEach((v,k)=>{const e=n-v.t,a=e>400?1-(e-400)/800:1;if(a<=0)cells.delete(k);else{x.fillStyle='rgba(255,255,255,'+(0.25*v.s*a)+')';x.fillRect(v.i*60,v.j*60,60,60);}});p=p.filter(v=>n-v.t<700);p.forEach(v=>{const q=(n-v.t)/700;x.strokeStyle='rgba(255,255,255,'+((1-q)*0.3)+')';x.lineWidth=1.5;x.beginPath();x.arc(v.x,v.y,i*300,0,7);x.stroke();});requestAnimationFrame(loop);}requestAnimationFrame(loop);
+})();
+</script>
+<script>
+(function(){
+  const c=document.getElementById('cursorGridCanvas'),x=c.getContext('2d');
+  let w,h,m={x:-1e3,y:-1e3},cells=new Map(),p=[];
+  function r(){w=c.width=innerWidth;h=c.height=innerHeight;}addEventListener('resize',r);r();
+  addEventListener('mousemove',e=>{m.x=e.clientX;m.y=e.clientY;const n=performance.now();for(let i=Math.max(0,Math.floor((m.x-140)/60));i<=Math.ceil((m.x+140)/60);i++)for(let j=Math.max(0,Math.floor((m.y-140)/60));j<=Math.ceil((m.y+140)/60);j++){const d=Math.hypot(m.x-(i*60+30),m.y-(j*60+30));if(d<=140)cells.set(i+','+j,{i,j,t:n,s:1-d/140});}});
+  addEventListener('click',e=>p.push({x:e.clientX,y:e.clientY,t:performance.now()}));
+  function loop(n){x.clearRect(0,0,w,h);x.strokeStyle='rgba(255,255,255,0.07)';x.beginPath();for(let i=0;i<=w;i+=60){x.moveTo(i,0);x.lineTo(i,h);}for(let j=0;j<=h;j+=60){x.moveTo(0,j);x.lineTo(w,j);}x.stroke();if(m.x>-500){const g=x.createRadialGradient(m.x,m.y,0,m.x,m.y,196);g.addColorStop(0,'rgba(255,255,255,0.08)');g.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=g;x.fillRect(0,0,w,h);}cells.forEach((v,k)=>{const e=n-v.t,a=e>400?1-(e-400)/800:1;if(a<=0)cells.delete(k);else{x.fillStyle='rgba(255,255,255,'+(0.12*v.s*a)+')';x.fillRect(v.i*60,v.j*60,60,60);}});p=p.filter(v=>n-v.t<700);p.forEach(v=>{const q=(n-v.t)/700;x.strokeStyle='rgba(255,255,255,'+((1-q)*0.3)+')';x.lineWidth=1.5;x.beginPath();x.arc(v.x,v.y,q*300,0,7);x.stroke();});requestAnimationFrame(loop);}requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
+
+
+
