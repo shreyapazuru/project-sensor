@@ -1,5 +1,10 @@
 ﻿import urllib.request, numpy as np
-import os, time, sqlite3, smtplib, winsound, threading
+import os, time, sqlite3, smtplib, threading
+
+try:
+    import winsound
+except ImportError:
+    winsound = None
 os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "rtsp_transport;tcp"
 from email.mime.text import MIMEText
 from datetime import datetime
@@ -52,10 +57,17 @@ init_db()
 
 def trigger_beep():
     global last_beep_time
+
+    if winsound is None:
+        return
+
     now = time.time()
     if now - last_beep_time > 1.2:
         last_beep_time = now
-        threading.Thread(target=lambda: winsound.Beep(1500, 500), daemon=True).start()
+        threading.Thread(
+            target=lambda: winsound.Beep(1500, 500),
+            daemon=True
+        ).start()
 
 def log_incident(cam_name, count, limit):
     conn = sqlite3.connect(DB_FILE)
